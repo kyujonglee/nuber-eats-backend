@@ -179,6 +179,7 @@ typings/
 # dotenv environment variables file
 .env
 .env.test
+.env.dev
 .env*.local
 
 # parcel-bundler cache (https://parceljs.org/)
