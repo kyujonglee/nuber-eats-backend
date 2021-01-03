@@ -6,6 +6,8 @@ import {
   CreateAccountInput,
   CreateAccountOutput,
 } from './dtos/create-account.dto';
+import { LoginInput, LoginOutput } from './dtos/login.dto';
+import { MutationOutput } from '../common/dtos/output.dto';
 
 @Injectable()
 export class UsersService {
@@ -19,7 +21,7 @@ export class UsersService {
     role,
   }: CreateAccountInput): Promise<CreateAccountOutput> {
     try {
-      const user = this.users.findOne({ email });
+      const user = await this.users.findOne({ email });
       if (user)
         return {
           ok: false,
@@ -33,6 +35,34 @@ export class UsersService {
       return {
         ok: false,
         error: "Couldn't create account",
+      };
+    }
+  }
+
+  async login(loginInput: LoginInput): Promise<LoginOutput> {
+    try {
+      const user = await this.users.findOne({ email: loginInput.email });
+      if (!user) {
+        return {
+          ok: false,
+          error: 'We cannot find a user by this email.',
+        };
+      }
+      const passwordCorrect = await user.checkPassword(loginInput.password);
+      if (!passwordCorrect) {
+        return {
+          ok: false,
+          error: 'Wrong password',
+        };
+      }
+      return {
+        ok: true,
+        token: 'lalala',
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
       };
     }
   }
