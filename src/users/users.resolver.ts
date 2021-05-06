@@ -10,17 +10,18 @@ import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { AuthUser } from '../auth/auth-user.decorator';
 import { UserProfileInput, UserProfileOutput } from './dtos/user-profile.dto';
+import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 
-@Resolver(of => User)
+@Resolver((of) => User)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
-  @Query(returns => Boolean)
+  @Query((returns) => Boolean)
   hi() {
     return true;
   }
 
-  @Mutation(returns => CreateAccountOutput)
+  @Mutation((returns) => CreateAccountOutput)
   async createAccount(
     @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutput> {
@@ -34,7 +35,7 @@ export class UsersResolver {
     }
   }
 
-  @Mutation(returns => LoginOutput)
+  @Mutation((returns) => LoginOutput)
   async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
     try {
       return this.usersService.login(loginInput);
@@ -46,14 +47,14 @@ export class UsersResolver {
     }
   }
 
-  @Query(returns => User)
+  @Query((returns) => User)
   @UseGuards(AuthGuard)
   me(@AuthUser() authUser: User): User {
     return authUser;
   }
 
   @UseGuards(AuthGuard)
-  @Query(returns => User)
+  @Query((returns) => UserProfileOutput)
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
@@ -68,6 +69,25 @@ export class UsersResolver {
       return {
         error: 'User not found.',
         ok: false,
+      };
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Mutation((returns) => EditProfileOutput)
+  async editProfile(
+    @AuthUser() authUser: User,
+    @Args('input') editProfileInput: EditProfileInput,
+  ): Promise<EditProfileOutput> {
+    try {
+      await this.usersService.editProfile(authUser.id, editProfileInput);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
       };
     }
   }
